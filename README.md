@@ -23,6 +23,108 @@ Seu desafio será desenvolver um painel web que centralize essas informações, 
 
 ---
 
+# Entendendo o domínio
+
+Este desafio usa conceitos comuns da execução orçamentária pública. A pessoa candidata não precisa ser especialista em orçamento público, mas precisa representar os dados de forma coerente na aplicação.
+
+## O que é um orçamento
+
+Neste contexto, um orçamento representa uma autorização de gasto para um órgão público em determinado ano, vinculada a um programa de governo, uma ação orçamentária, uma natureza de despesa e uma fonte de recurso.
+
+Exemplo simplificado:
+
+```
+Órgão: Secretaria de Estado de Educação
+Programa: Educação pública de qualidade
+Ação: Manutenção de unidades escolares
+Natureza da despesa: Material de consumo
+Fonte de recurso: Tesouro estadual
+Ano: 2026
+Dotação atualizada: R$ 10.000.000,00
+Valor empenhado: R$ 7.000.000,00
+Valor liquidado: R$ 5.500.000,00
+Valor pago: R$ 4.800.000,00
+Saldo: R$ 3.000.000,00
+```
+
+## Principais conceitos
+
+* **Órgão**: entidade pública responsável por executar parte do orçamento, como SEPLAG, SEEDUC, SES, DETRAN ou Polícia Militar.
+* **Unidade gestora**: unidade administrativa que executa o orçamento dentro de um órgão.
+* **Programa**: conjunto de iniciativas do governo com um objetivo comum, por exemplo "Atenção à saúde" ou "Infraestrutura rodoviária".
+* **Ação**: atividade, projeto ou operação específica dentro de um programa, por exemplo "Construção de unidades escolares".
+* **Função e subfunção**: classificação da área de atuação do gasto, como saúde, educação, segurança pública ou transporte.
+* **Natureza da despesa**: classificação do tipo de gasto, como pessoal, material de consumo, serviços de terceiros, obras ou equipamentos.
+* **Fonte de recurso**: origem do dinheiro utilizado, como tesouro estadual, convênios, transferências federais ou recursos próprios.
+
+## Valores orçamentários
+
+* **Dotação inicial**: valor aprovado inicialmente para aquele orçamento no começo do exercício.
+* **Suplementações**: acréscimos realizados ao orçamento ao longo do ano.
+* **Anulações**: reduções realizadas no orçamento ao longo do ano.
+* **Dotação atualizada**: valor final disponível após suplementações e anulações.
+
+Uma forma simples de calcular:
+
+```
+dotacao_atualizada = dotacao_inicial + suplementacoes - anulacoes
+```
+
+## Etapas da execução da despesa
+
+* **Empenhado**: valor reservado para uma despesa assumida pelo órgão. Indica que o governo se comprometeu com aquele gasto.
+* **Liquidado**: valor correspondente a bens entregues ou serviços prestados e conferidos.
+* **Pago**: valor efetivamente pago ao fornecedor.
+* **Saldo**: valor ainda disponível em relação à dotação atualizada.
+
+Uma forma simples de calcular:
+
+```
+saldo = dotacao_atualizada - valor_empenhado
+percentual_execucao = (valor_empenhado / dotacao_atualizada) * 100
+```
+
+Em uma situação ideal, os valores costumam seguir esta ordem:
+
+```
+valor_pago <= valor_liquidado <= valor_empenhado <= dotacao_atualizada
+```
+
+Porém, a base fictícia deve conter também inconsistências propositais para avaliar como a aplicação lida com dados reais problemáticos.
+
+## Contratos vinculados
+
+Contratos representam acordos firmados com fornecedores para execução de serviços, compra de materiais, obras ou fornecimento de bens.
+
+Um contrato deve estar vinculado a um orçamento quando ele consome recursos daquela dotação. Um orçamento pode ter vários contratos, um contrato deve estar associado a um orçamento, e também devem existir orçamentos sem contrato para simular situações reais.
+
+Exemplo:
+
+```
+Contrato: 045/2026
+Fornecedor: Alpha Serviços de Engenharia Ltda.
+Objeto: Reforma de escolas estaduais
+Valor: R$ 2.400.000,00
+Status: Vigente
+Orçamento vinculado: Manutenção de unidades escolares
+```
+
+## O que os dados devem permitir analisar
+
+A base fictícia deve permitir que o usuário responda perguntas como:
+
+* Quais órgãos têm maior orçamento?
+* Quais órgãos já executaram a maior parte da dotação?
+* Quais programas concentram mais gastos?
+* Qual valor foi empenhado, liquidado e pago?
+* Quais orçamentos ainda têm saldo disponível?
+* Quais orçamentos estão sem execução?
+* Quais contratos estão vencidos, vigentes ou encerrados?
+* Quais registros possuem inconsistências ou informações ausentes?
+* Quais orçamentos já foram revisados por um analista?
+
+---
+
 # O que construir
 
 ## Backend
@@ -372,7 +474,9 @@ Exemplos
 
 500 registros.
 
-Campos sugeridos
+Cada registro orçamentário deve representar uma combinação de ano, órgão, unidade gestora, programa, ação, natureza da despesa e fonte de recurso.
+
+Campos sugeridos:
 
 ```
 id
@@ -422,13 +526,23 @@ revisado_por
 data_revisao
 ```
 
+Regras esperadas para geração dos valores:
+
+* `dotacao_atualizada` deve ser calculada a partir de `dotacao_inicial`, `suplementacoes` e `anulacoes`.
+* `saldo` deve ser calculado preferencialmente a partir de `dotacao_atualizada - valor_empenhado`.
+* `percentual_execucao` deve representar o percentual empenhado sobre a dotação atualizada.
+* `status` pode indicar situações como `sem_execucao`, `em_execucao`, `executado`, `saldo_negativo` ou `inconsistente`.
+* Alguns registros devem conter valores nulos para testar o tratamento de dados ausentes na interface.
+
 ---
 
 ## Contratos
 
 300 contratos.
 
-Campos
+Cada contrato deve representar uma contratação vinculada a um orçamento, com fornecedor, objeto, valor, período de vigência e situação.
+
+Campos:
 
 ```
 numero_contrato
@@ -448,6 +562,13 @@ status
 orcamento_id
 ```
 
+Status sugeridos:
+
+* `vigente`
+* `vencido`
+* `encerrado`
+* `suspenso`
+
 ---
 
 ## Programas
@@ -456,6 +577,14 @@ Gerar aproximadamente:
 
 * 30 programas governamentais
 
+Exemplos:
+
+* Atenção à saúde
+* Educação pública de qualidade
+* Segurança cidadã
+* Infraestrutura rodoviária
+* Modernização da gestão pública
+
 ---
 
 ## Ações
@@ -463,6 +592,15 @@ Gerar aproximadamente:
 Gerar aproximadamente:
 
 * 80 ações orçamentárias
+
+Exemplos:
+
+* Manutenção de unidades escolares
+* Aquisição de medicamentos
+* Reforma de hospitais
+* Conservação de rodovias
+* Capacitação de servidores
+* Modernização de sistemas corporativos
 
 ---
 
