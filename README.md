@@ -25,11 +25,27 @@ Seu desafio será desenvolver um painel web que centralize essas informações, 
 
 # Entendendo o domínio
 
-Este desafio usa conceitos comuns da execução orçamentária pública. A pessoa candidata não precisa ser especialista em orçamento público, mas precisa representar os dados de forma coerente na aplicação.
+Este desafio usa conceitos comuns da execução orçamentária pública. **Você não precisa ser especialista em orçamento público** — tudo o que é necessário para desenvolver a aplicação está explicado nesta seção. Leia com atenção antes de começar: entender o domínio é parte do desafio e evita erros de modelagem.
 
-## O que é um orçamento
+## Uma analogia para começar
 
-Neste contexto, um orçamento representa uma autorização de gasto para um órgão público em determinado ano, vinculada a um programa de governo, uma ação orçamentária, uma natureza de despesa e uma fonte de recurso.
+Pense no orçamento público como o planejamento financeiro de uma família, só que em escala de governo:
+
+* No início do ano, a família define quanto pode gastar com cada coisa: mercado, escola, saúde. Isso é a **dotação inicial**.
+* Ao longo do ano, surgem imprevistos: ela remaneja dinheiro de uma categoria para outra. Aumentos são **suplementações**, reduções são **anulações**. O valor final de cada categoria é a **dotação atualizada**.
+* Quando a família fecha o pacote da escola do filho e assina o contrato, ela **se comprometeu** com aquele gasto, mesmo que ainda não tenha pagado nada. No governo, isso é o **empenho**.
+* Quando o mês de aula acontece e o serviço foi de fato prestado, a dívida se torna real e conferida. No governo, isso é a **liquidação**.
+* Quando o boleto é efetivamente pago, o dinheiro sai da conta. No governo, isso é o **pagamento**.
+
+Ou seja: **empenhar** é reservar/comprometer, **liquidar** é confirmar que recebeu o que comprou, **pagar** é transferir o dinheiro. Por isso, em condições normais, o valor pago nunca é maior que o liquidado, que nunca é maior que o empenhado.
+
+## O que é um "orçamento" nesta aplicação
+
+Neste contexto, um registro de orçamento representa **uma autorização de gasto** para um órgão público em determinado ano, vinculada a um programa de governo, uma ação orçamentária, uma natureza de despesa e uma fonte de recurso.
+
+Cada linha da tabela de orçamentos responde, na prática, a esta pergunta:
+
+> "Quanto o órgão X pode gastar, no ano Y, com o tipo de despesa Z, dentro do programa W — e quanto disso já foi gasto?"
 
 Exemplo simplificado:
 
@@ -47,24 +63,24 @@ Valor pago: R$ 4.800.000,00
 Saldo: R$ 3.000.000,00
 ```
 
-## Principais conceitos
+## Principais conceitos (glossário)
 
-* **Órgão**: entidade pública responsável por executar parte do orçamento, como SEPLAG, SEEDUC, SES, DETRAN ou Polícia Militar.
-* **Unidade gestora**: unidade administrativa que executa o orçamento dentro de um órgão.
-* **Programa**: conjunto de iniciativas do governo com um objetivo comum, por exemplo "Atenção à saúde" ou "Infraestrutura rodoviária".
-* **Ação**: atividade, projeto ou operação específica dentro de um programa, por exemplo "Construção de unidades escolares".
-* **Função e subfunção**: classificação da área de atuação do gasto, como saúde, educação, segurança pública ou transporte.
-* **Natureza da despesa**: classificação do tipo de gasto, como pessoal, material de consumo, serviços de terceiros, obras ou equipamentos.
-* **Fonte de recurso**: origem do dinheiro utilizado, como tesouro estadual, convênios, transferências federais ou recursos próprios.
+* **Órgão**: entidade pública responsável por executar parte do orçamento, como SEPLAG, SEEDUC (Educação), SES (Saúde), DETRAN ou Polícia Militar. Pense como "departamentos" do governo estadual. É o nível mais alto de agrupamento dos dados.
+* **Unidade gestora**: unidade administrativa que executa o orçamento **dentro** de um órgão. Exemplo: dentro da SES (Secretaria de Saúde), o "Hospital Estadual X" e o "Fundo Estadual de Saúde" podem ser unidades gestoras diferentes. Relação: um órgão tem várias unidades gestoras.
+* **Programa**: conjunto de iniciativas do governo com um objetivo comum, por exemplo "Atenção à saúde" ou "Infraestrutura rodoviária". É o "para quê" do gasto, em nível estratégico. Um programa pode ser executado por mais de um órgão.
+* **Ação**: atividade, projeto ou operação específica **dentro de um programa**, por exemplo "Construção de unidades escolares" dentro do programa "Educação pública de qualidade". Relação: um programa tem várias ações.
+* **Função e subfunção**: classificação da **área de atuação** do gasto, como saúde, educação, segurança pública ou transporte. Serve para responder "quanto o estado gasta com saúde?", somando gastos de todos os órgãos. A subfunção detalha a função (ex.: função "Saúde", subfunção "Atenção hospitalar").
+* **Natureza da despesa**: classificação do **tipo** de gasto — pessoal, material de consumo, serviços de terceiros, obras, equipamentos. Responde "gastou com o quê?" (enquanto o programa responde "gastou para quê?").
+* **Fonte de recurso**: **origem do dinheiro** utilizado — tesouro estadual (impostos arrecadados pelo próprio estado), convênios, transferências federais ou recursos próprios do órgão. Importa porque certos recursos só podem ser usados para certas finalidades.
+
+Em resumo, cada registro orçamentário é uma combinação dessas classificações: **quem gasta** (órgão + unidade gestora), **para quê** (programa + ação + função/subfunção), **com o quê** (natureza da despesa) e **com dinheiro de onde** (fonte de recurso).
 
 ## Valores orçamentários
 
-* **Dotação inicial**: valor aprovado inicialmente para aquele orçamento no começo do exercício.
-* **Suplementações**: acréscimos realizados ao orçamento ao longo do ano.
-* **Anulações**: reduções realizadas no orçamento ao longo do ano.
-* **Dotação atualizada**: valor final disponível após suplementações e anulações.
-
-Uma forma simples de calcular:
+* **Dotação inicial**: valor aprovado no início do ano para aquele orçamento. É o "teto de gasto" original.
+* **Suplementações**: acréscimos realizados ao longo do ano (o órgão recebeu autorização para gastar mais).
+* **Anulações**: reduções realizadas ao longo do ano (parte do valor foi cortada ou remanejada para outro lugar).
+* **Dotação atualizada**: o teto de gasto **vigente**, após somar suplementações e subtrair anulações. É sempre a dotação atualizada (e não a inicial) que serve de base para calcular saldo e percentual de execução.
 
 ```
 dotacao_atualizada = dotacao_inicial + suplementacoes - anulacoes
@@ -72,31 +88,58 @@ dotacao_atualizada = dotacao_inicial + suplementacoes - anulacoes
 
 ## Etapas da execução da despesa
 
-* **Empenhado**: valor reservado para uma despesa assumida pelo órgão. Indica que o governo se comprometeu com aquele gasto.
-* **Liquidado**: valor correspondente a bens entregues ou serviços prestados e conferidos.
-* **Pago**: valor efetivamente pago ao fornecedor.
-* **Saldo**: valor ainda disponível em relação à dotação atualizada.
+Toda despesa pública passa por três estágios, **nesta ordem**:
 
-Uma forma simples de calcular:
+1. **Empenhado**: o órgão assumiu o compromisso e reservou o valor (assinou o contrato, emitiu a ordem de compra). O dinheiro ainda não saiu, mas já está comprometido e não pode ser usado para outra coisa.
+2. **Liquidado**: o bem foi entregue ou o serviço foi prestado, e o governo conferiu e atestou. A dívida agora é real e exigível.
+3. **Pago**: o dinheiro foi efetivamente transferido ao fornecedor.
+
+E, derivado deles:
+
+* **Saldo**: quanto do teto de gasto ainda está livre, ou seja, não comprometido.
 
 ```
 saldo = dotacao_atualizada - valor_empenhado
 percentual_execucao = (valor_empenhado / dotacao_atualizada) * 100
 ```
 
-Em uma situação ideal, os valores costumam seguir esta ordem:
+### Exemplo passo a passo
+
+A SEEDUC tem uma dotação atualizada de **R$ 10 milhões** para "Manutenção de unidades escolares" em 2026:
+
+1. Ela assina contratos de reforma no total de **R$ 7 milhões** → `valor_empenhado = 7.000.000` e `saldo = 3.000.000`. Ela ainda pode assumir novos compromissos de até R$ 3 milhões.
+2. As empreiteiras concluem e entregam **R$ 5,5 milhões** em obras, conferidas pelos fiscais → `valor_liquidado = 5.500.000`. Há R$ 1,5 milhão empenhado mas ainda não entregue.
+3. O estado paga **R$ 4,8 milhões** dos valores liquidados → `valor_pago = 4.800.000`. Há R$ 700 mil de obras já entregues aguardando pagamento.
+
+Repare que cada etapa "afunila" a anterior:
 
 ```
-valor_pago <= valor_liquidado <= valor_empenhado <= dotacao_atualizada
+valor_pago (4,8M) <= valor_liquidado (5,5M) <= valor_empenhado (7M) <= dotacao_atualizada (10M)
 ```
 
-Porém, a base fictícia deve conter também inconsistências propositais para avaliar como a aplicação lida com dados reais problemáticos.
+Essa é a regra em uma situação **ideal**. Porém, sistemas reais têm dados problemáticos — e a base fictícia deste desafio **deve conter inconsistências propositais** (ex.: pago maior que liquidado, saldo negativo, campos nulos) justamente para avaliar como a aplicação identifica, sinaliza e não quebra diante desses casos.
+
+## Interpretando os números (visão do analista)
+
+Para entender o que o usuário do painel procura ao olhar esses dados:
+
+* **Percentual de execução baixo perto do fim do ano** → o órgão pode estar com dificuldade de executar; recursos podem ser perdidos ou remanejados.
+* **Saldo negativo** → foi empenhado mais do que a dotação permite; erro grave que precisa ficar visível no painel.
+* **Empenhado alto e pago baixo** → obras/serviços contratados mas entregas ou pagamentos atrasados.
+* **Pago maior que liquidado** → inconsistência (pagou-se algo que não foi conferido); deve ser sinalizada, nunca escondida.
+* **Orçamento sem nenhum empenho** → dinheiro parado, sem execução.
 
 ## Contratos vinculados
 
-Contratos representam acordos firmados com fornecedores para execução de serviços, compra de materiais, obras ou fornecimento de bens.
+Contratos representam acordos firmados com fornecedores para execução de serviços, compra de materiais, obras ou fornecimento de bens. É pelo contrato que o compromisso assumido no empenho se materializa: o governo contrata a empresa Y para entregar o objeto Z por R$ N, dentro de um período de vigência.
 
-Um contrato deve estar vinculado a um orçamento quando ele consome recursos daquela dotação. Um orçamento pode ter vários contratos, um contrato deve estar associado a um orçamento, e também devem existir orçamentos sem contrato para simular situações reais.
+Um contrato consome recursos de uma dotação específica, portanto deve estar **vinculado a um orçamento**. A modelagem esperada é:
+
+* Um orçamento pode ter **vários** contratos (relação 1:N);
+* Todo contrato pertence a **exatamente um** orçamento;
+* Devem existir orçamentos **sem nenhum contrato** (situação comum na prática, ex.: despesas de pessoal).
+
+Sobre a situação do contrato: **vigente** significa dentro do período de vigência; **vencido** significa que a data de fim passou sem encerramento formal; **encerrado** significa concluído/finalizado formalmente; **suspenso** significa temporariamente paralisado.
 
 Exemplo:
 
@@ -169,6 +212,8 @@ preferred_username
 
 com o e-mail do usuário autenticado.
 
+O token deverá possuir tempo de expiração. A estratégia de renovação (refresh token, renovação silenciosa ou redirecionamento para novo login ao expirar) fica a seu critério — documente a escolha no README do projeto.
+
 ---
 
 # Endpoints obrigatórios
@@ -193,8 +238,8 @@ Exemplo:
 
 ```
 {
-    "total_orgaos": 12,
-    "total_contratos": 186,
+    "total_orgaos": 20,
+    "total_contratos": 300,
     "orcamento_total": 428000000,
     "empenhado": 321000000,
     "liquidado": 287000000,
@@ -212,9 +257,8 @@ Lista todos os órgãos.
 
 Filtros:
 
-* nome
-* secretaria
-* status
+* nome ou sigla (busca parcial)
+* status (`ativo` ou `inativo`)
 * paginação
 
 ---
@@ -449,11 +493,25 @@ Sem necessidade de configuração adicional.
 
 # Base de Dados Fictícia
 
+Para que você não perca tempo inventando nomes de órgãos, programas, ações e fornecedores, o repositório inclui o arquivo:
+
+```
+dados-referencia.json
+```
+
+com listas prontas de órgãos (com sigla e nome), programas, ações (já vinculadas aos seus programas), funções/subfunções, naturezas de despesa, fontes de recurso, exemplos de unidades gestoras e fornecedores fictícios.
+
+**Use o JSON como base nos seus seeders/factories.** Não é obrigatório usar exatamente todos os itens do arquivo — ele existe para que você gere dados **coerentes** (ex.: ações combinando com seus programas, contratos com fornecedores plausíveis) sem perder tempo inventando nomes. O importante é respeitar as quantidades aproximadas pedidas abaixo e manter a consistência entre as entidades.
+
+A modelagem das tabelas, os relacionamentos e a geração dos valores (dotações, empenhos, inconsistências propositais etc.) continuam sendo responsabilidade sua — e fazem parte da avaliação.
+
 A aplicação deverá conter aproximadamente:
 
 ## Órgãos
 
 20 órgãos estaduais
+
+Campos sugeridos: `id`, `sigla`, `nome`, `status` (`ativo` ou `inativo`). Inclua pelo menos um órgão inativo e um órgão sem orçamento.
 
 Exemplos
 
@@ -531,7 +589,12 @@ Regras esperadas para geração dos valores:
 * `dotacao_atualizada` deve ser calculada a partir de `dotacao_inicial`, `suplementacoes` e `anulacoes`.
 * `saldo` deve ser calculado preferencialmente a partir de `dotacao_atualizada - valor_empenhado`.
 * `percentual_execucao` deve representar o percentual empenhado sobre a dotação atualizada.
-* `status` pode indicar situações como `sem_execucao`, `em_execucao`, `executado`, `saldo_negativo` ou `inconsistente`.
+* `status` pode indicar situações como:
+  * `sem_execucao` — nenhum valor empenhado;
+  * `em_execucao` — parte da dotação empenhada;
+  * `executado` — dotação totalmente (ou quase totalmente) empenhada;
+  * `saldo_negativo` — empenhado acima da dotação atualizada;
+  * `inconsistente` — valores que violam a ordem esperada (ex.: pago maior que liquidado) ou campos essenciais ausentes.
 * Alguns registros devem conter valores nulos para testar o tratamento de dados ausentes na interface.
 
 ---
@@ -677,5 +740,33 @@ Não são obrigatórios, mas agregam valor:
 * Filtros avançados com múltiplas combinações.
 * Dashboard em tempo real utilizando WebSockets (Laravel Reverb).
 * Deploy publicado (Vercel para o frontend e Railway/Render para o backend).
+
+---
+
+# Entrega
+
+## Prazo
+
+**7 dias corridos** a partir do recebimento deste desafio.
+
+## Formato
+
+* Repositório **único** (mono-repo) no GitHub, contendo `/backend`, `/frontend` e o `docker-compose.yml` na raiz.
+* O repositório deverá ser **público**. Repositórios privados não serão avaliados.
+* Registre a entrega, informando o link do repositório, em **https://subpep.rj.gov.br/entrega-desafio** até o fim do prazo.
+
+## Dúvidas
+
+Dúvidas sobre o enunciado durante o desafio podem ser registradas no mesmo portal da entrega: **https://subpep.rj.gov.br/entrega-desafio**. Interpretar requisitos faz parte do trabalho, mas preferimos esclarecer a deixar você travado.
+
+## Histórico de commits
+
+O histórico de commits **faz parte da avaliação**. Commits incrementais, com mensagens claras, que contam a evolução do projeto, são muito melhores do que um único commit com o projeto pronto.
+
+## Uso de inteligência artificial
+
+Ferramentas de IA (Copilot, ChatGPT, Claude etc.) **podem ser usadas livremente**, desde que você declare no README do projeto como as utilizou. Você deverá ser capaz de explicar e defender tecnicamente qualquer parte do código em conversa posterior — entender profundamente o que entregou é essencial.
+
+---
 
 Esse desafio simula um cenário próximo ao encontrado em equipes de desenvolvimento que atuam com sistemas de acompanhamento orçamentário no setor público, avaliando tanto a capacidade técnica quanto as decisões de arquitetura, organização do código e a experiência oferecida ao usuário final.
