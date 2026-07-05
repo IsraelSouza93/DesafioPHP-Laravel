@@ -583,11 +583,11 @@ Não são obrigatórios, mas agregam valor:
 
 * Repositório **único** (mono-repo) no GitHub, contendo `/backend`, `/frontend` e o `docker-compose.yml` na raiz.
 * O repositório deverá ser **público**. Repositórios privados não serão avaliados.
-* Registre a entrega, informando o link do repositório, em **https://subpep.rj.gov.br/suborc/entrega-desafio/entrega-desafio** até o fim do prazo.
+* Registre a entrega, informando o link do repositório, em **https://subpep.rj.gov.br/suborc/entrega-desafio/** até o fim do prazo.
 
 ## Dúvidas
 
-Dúvidas sobre o enunciado durante o desafio podem ser registradas no mesmo portal da entrega: **https://subpep.rj.gov.br/suborc/entrega-desafio/entrega-desafio**. Interpretar requisitos faz parte do trabalho, mas preferimos esclarecer a deixar você travado.
+Dúvidas sobre o enunciado durante o desafio podem ser registradas no mesmo portal da entrega: **https://subpep.rj.gov.br/suborc/entrega-desafio/**. Interpretar requisitos faz parte do trabalho, mas preferimos esclarecer a deixar você travado.
 
 ## Histórico de commits
 
